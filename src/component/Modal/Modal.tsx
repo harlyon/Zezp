@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "react-modal";
-import { User, UserModalProps } from "../../types/types";
+import { UserModalProps } from "../../types/types";
 
 const customStyles = {
   content: {
