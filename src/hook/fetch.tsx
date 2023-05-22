@@ -1,34 +1,42 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User } from '../types/types';
 
 export const useFetchData = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState('');
 
+  const API_URL = 'http://api.stackexchange.com/2.2/users?pagesize=20&order=desc&sort=reputation&site=stackoverflow' //this can be stored in env file
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Check if user data is available in local storage
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const data = await response.json();
+        const fetchedUsers = data.items.map((item: any) => ({
+          user_id: item.user_id,
+          display_name: item.display_name,
+          reputation: item.reputation,
+          profile_image: item.profile_image,
+          location: item.location,
+          link: item.link
+        }));
+        // I NOTICED THE API TIMES OUT OFTEN
+
+        // Compare new data with cached data to check for updates
         const cachedData = localStorage.getItem('userData');
         if (cachedData) {
           const parsedData = JSON.parse(cachedData);
-          setUsers(parsedData);
-        } else {
-          const response = await fetch('http://api.stackexchange.com/2.2/users?pagesize=20&order=desc&sort=reputation&site=stackoverflow');
-          if (!response.ok) {
-            throw new Error('Failed to fetch user data');
+          if (JSON.stringify(parsedData) !== JSON.stringify(fetchedUsers)) {
+            // Data is updated, update the state and cache
+            setUsers(fetchedUsers);
+            localStorage.setItem('userData', JSON.stringify(fetchedUsers));
           }
-          const data = await response.json();
-          const fetchedUsers = data.items.map((item: any) => ({
-            user_id: item.user_id,
-            display_name: item.display_name,
-            reputation: item.reputation,
-            profile_image: item.profile_image,
-            location: item.location,
-            link: item.link
-          }));
+        } else {
+          // No cached data, set the fetched data and cache it
           setUsers(fetchedUsers);
-          // Cache the user data in local storage
           localStorage.setItem('userData', JSON.stringify(fetchedUsers));
         }
       } catch (error) {
@@ -42,3 +50,4 @@ export const useFetchData = () => {
 
   return { users, error };
 };
+
