@@ -5,12 +5,10 @@ export const useFetchData = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState('');
 
-  const API_URL = 'http://api.stackexchange.com/2.2/users?pagesize=20&order=desc&sort=reputation&site=stackoverflow' //this can be stored in env file
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch('http://api.stackexchange.com/2.2/users?pagesize=20&order=desc&sort=reputation&site=stackoverflow');
         if (!response.ok) {
           throw new Error('Failed to fetch user data');
         }
@@ -23,7 +21,8 @@ export const useFetchData = () => {
           location: item.location,
           link: item.link
         }));
-        // I NOTICED THE API TIMES OUT OFTEN
+
+        // API TIMES OUT AFTER S NUMBER OF REQUEST SO I DID THIS
 
         // Compare new data with cached data to check for updates
         const cachedData = localStorage.getItem('userData');
@@ -33,8 +32,11 @@ export const useFetchData = () => {
             // Data is updated, update the state and cache
             setUsers(fetchedUsers);
             localStorage.setItem('userData', JSON.stringify(fetchedUsers));
+          } else {
+            // No data updates, set the cached data as the initial state
+            setUsers(parsedData);
           }
-        } else {
+        } else if (fetchedUsers.length > 0) {
           // No cached data, set the fetched data and cache it
           setUsers(fetchedUsers);
           localStorage.setItem('userData', JSON.stringify(fetchedUsers));
@@ -50,4 +52,3 @@ export const useFetchData = () => {
 
   return { users, error };
 };
-
