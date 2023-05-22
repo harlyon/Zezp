@@ -1,26 +1,20 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react'
+import { UserList } from './component/User/User';
+import { useFetchData } from './hook/fetch';
+import './App.css'
+import { userData } from './data/data';
 
-function App() {
+const App: React.FC = () => {
+  const { users, error } = useFetchData();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <UserList
+        users={users}
+        error={error}
+        />
     </div>
   );
-}
+};
 
 export default App;
